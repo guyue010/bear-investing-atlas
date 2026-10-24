@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#19362f" />
+  <meta name="description" content="把财务概念、巴菲特会计思想、公司研究方法和真实案例连接起来的交互式学习地图。" />
+  <title>小熊投资学习地图</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <header class="topbar">
+    <a class="brand" href="#home" data-route="home" aria-label="返回首页">
+      <span class="brand-mark">熊</span>
+      <span><b>小熊投资学习地图</b><small>从会计数字走向经济现实</small></span>
+    </a>
+    <div class="header-actions">
+      <button class="icon-btn" id="shareButton" aria-label="分享页面">↗</button>
+      <button class="search-open" id="searchOpen"><span>⌕</span> 搜索知识点</button>
+    </div>
+  </header>
+
+  <nav class="main-nav" aria-label="主要导航">
+    <button class="nav-item active" data-route="home">首页</button>
+    <button class="nav-item" data-route="atlas">知识地图</button>
+    <button class="nav-item" data-route="cases">案例库</button>
+    <button class="nav-item" data-route="compare">对比台</button>
+    <button class="nav-item" data-route="review">我的复习</button>
+  </nav>
+
+  <main>
+    <section class="view active" id="view-home">
+      <div class="hero shell">
+        <div class="hero-copy">
+          <span class="eyebrow">你的长期投资学习册 · 交互版</span>
+          <h1>先看懂生意，<br><em>再相信数字。</em></h1>
+          <p>这不是一份按字母排列的术语词典。它把每个概念放回同一条因果链：经营发生了什么、会计怎样记录、现金是否留下、每股价值有没有增长。</p>
+          <div class="hero-actions">
+            <button class="primary" data-route="atlas">打开知识地图</button>
+            <button class="secondary" id="randomConcept">随机复习一张</button>
+          </div>
+        </div>
+        <div class="hero-board" aria-label="投资分析主链条">
+          <div class="board-label">一家公司，从这里看懂</div>
+          <button class="chain-node" data-concept="revenue"><span>01</span>经营收入</button>
+          <i>↓</i>
+          <button class="chain-node" data-concept="net-profit"><span>02</span>会计利润</button>
+          <i>↓</i>
+          <button class="chain-node" data-concept="owner-earnings"><span>03</span>真实现金</button>
+          <i>↓</i>
+          <button class="chain-node" data-concept="capital-allocation"><span>04</span>资本配置</button>
+          <i>↓</i>
+          <button class="chain-node accent" data-concept="intrinsic-value"><span>05</span>每股内在价值</button>
+        </div>
+      </div>
+
+      <div class="stats-strip">
+        <div><b id="conceptCount">0</b><span>核心知识点</span></div>
+        <div><b id="caseCount">0</b><span>连续案例</span></div>
+        <div><b>4</b><span>学习路径</span></div>
+        <div><b id="progressCount">0</b><span>已掌握</span></div>
+      </div>
+
+      <section class="shell section-block">
+        <div class="section-head">
+          <div><span class="kicker">STEP BY STEP</span><h2>按问题学习，而不是背术语</h2></div>
+          <p>四条路径彼此独立，也会在关键节点交叉。</p>
+        </div>
+        <div class="path-grid" id="pathGrid"></div>
+      </section>
+
+      <section class="shell section-block">
+        <div class="section-head">
+          <div><span class="kicker">CORE MAP</span><h2>七个主题，边界清晰</h2></div>
+          <button class="text-link" data-route="atlas">查看全部知识点 →</button>
+        </div>
+        <div class="domain-grid" id="domainGrid"></div>
+      </section>
+
+      <section class="shell section-block case-preview-wrap">
+        <div class="section-head">
+          <div><span class="kicker">CASE LAB</span><h2>先看数字，再看经济现实</h2></div>
+          <button class="text-link" data-route="cases">进入案例库 →</button>
+        </div>
+        <div class="case-preview" id="homeCases"></div>
+      </section>
+
+      <section class="shell memory-card">
+        <span class="kicker">最终记忆卡</span>
+        <h2>遇到任何财务数字，连续追问七件事</h2>
+        <div class="question-grid">
+          <p><b>01</b>口径是什么？</p><p><b>02</b>和谁比较？</p><p><b>03</b>钱从哪里来？</p>
+          <p><b>04</b>钱到哪里去？</p><p><b>05</b>最终归谁？</p><p><b>06</b>是否可持续？</p><p><b>07</b>什么会证伪？</p>
+        </div>
+      </section>
+    </section>
+
+    <section class="view" id="view-atlas">
+      <div class="page-head shell">
+        <span class="eyebrow">KNOWLEDGE ATLAS</span>
+        <h1>知识地图</h1>
+        <p>按经济问题分类：一个知识点只能有一个主位置，但可以通过“相关概念”连接到其他主题。</p>
+      </div>
+      <div class="toolbar shell">
+        <label class="search-field"><span>⌕</span><input id="atlasSearch" placeholder="搜索：股东盈余、期权、存货……" /></label>
+        <div class="filter-row" id="domainFilters"></div>
+      </div>
+      <div class="shell result-meta" id="atlasMeta"></div>
+      <div class="shell card-grid" id="conceptGrid"></div>
+    </section>
+
+    <section class="view" id="view-cases">
+      <div class="page-head shell">
+        <span class="eyebrow">CASE LIBRARY</span>
+        <h1>案例库</h1>
+        <p>案例不是概念的装饰，而是检验你能否把报表、现金流与股东结果连接起来。</p>
+      </div>
+      <div class="toolbar shell">
+        <label class="search-field"><span>⌕</span><input id="caseSearch" placeholder="搜索：喜诗、名创、库存、回购……" /></label>
+        <div class="filter-row" id="caseFilters"></div>
+      </div>
+      <div class="shell case-grid" id="caseGrid"></div>
+    </section>
+
+    <section class="view" id="view-compare">
+      <div class="page-head shell">
+        <span class="eyebrow">COMPARE DESK</span>
+        <h1>概念对比台</h1>
+        <p>很多误判并不是不会计算，而是把两个相似概念当成了一回事。</p>
+      </div>
+      <div class="shell compare-picker">
+        <label>左边概念<select id="compareLeft"></select></label>
+        <button id="swapCompare" class="swap-btn" aria-label="交换对比概念">⇄</button>
+        <label>右边概念<select id="compareRight"></select></label>
+      </div>
+      <div class="shell compare-output" id="compareOutput"></div>
+      <div class="shell quick-pairs">
+        <h2>常见混淆组合</h2>
+        <div id="quickPairs"></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-review">
+      <div class="page-head shell">
+        <span class="eyebrow">MY REVIEW</span>
+        <h1>我的复习</h1>
+        <p>收藏和掌握进度只保存在当前浏览器中，不需要登录。</p>
+      </div>
+      <div class="shell review-summary">
+        <div><b id="reviewMastered">0</b><span>已掌握</span></div>
+        <div><b id="reviewSaved">0</b><span>已收藏</span></div>
+        <button class="primary" id="reviewRandom">从未掌握中抽一张</button>
+      </div>
+      <section class="shell review-section"><h2>收藏的知识点</h2><div class="card-grid compact" id="savedGrid"></div></section>
+      <section class="shell review-section"><h2>最近浏览</h2><div class="card-grid compact" id="recentGrid"></div></section>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell footer-inner">
+      <div><b>小熊投资学习地图</b><p>理解会计，回到生意，落到每股价值。</p></div>
+      <p>内容用于学习与研究，不构成投资建议。</p>
+    </div>
+  </footer>
+
+  <div class="search-overlay" id="searchOverlay" aria-hidden="true">
+    <div class="search-panel">
+      <div class="global-search"><span>⌕</span><input id="globalSearch" placeholder="输入任何概念或案例" autocomplete="off" /><button id="searchClose">×</button></div>
+      <div id="globalResults" class="global-results"></div>
+    </div>
+  </div>
+
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-backdrop" data-close-drawer></div>
+    <article class="drawer-panel">
+      <button class="drawer-close" data-close-drawer aria-label="关闭">×</button>
+      <div id="drawerContent"></div>
+    </article>
+  </aside>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="./data.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
