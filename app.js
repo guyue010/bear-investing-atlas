@@ -59,7 +59,7 @@ function renderFilters(){
 
 function renderConcepts(){
   const q = ($('#atlasSearch').value || '').trim().toLowerCase();
-  const rows = CONCEPTS.filter(c => (state.domain==='all'||c.domain===state.domain) && (!q || [c.title,c.oneLine,c.example,c.distinction,c.pitfall,c.why,c.mechanism,...Object.values(c.lenses||{}),...(c.questions||[])].join(' ').toLowerCase().includes(q)));
+  const rows = CONCEPTS.filter(c => (state.domain==='all'||c.domain===state.domain) && (!q || [c.title,c.oneLine,c.example,c.distinction,c.pitfall,c.why,c.mechanism,...Object.values(c.lenses||{}),...(c.questions||[]),LESSONS[c.id]?.question,LESSONS[c.id]?.use,...DIALOGUE_ARCHIVE.filter(d=>d.concepts.includes(c.id)).map(d=>d.title)].join(' ').toLowerCase().includes(q)));
   $('#atlasMeta').textContent = `找到 ${rows.length} 个知识点${state.domain==='all'?'':` · ${domainById(state.domain).name}`}`;
   $('#conceptGrid').innerHTML = rows.length ? rows.map(conceptCard).join('') : '<div class="empty-state">没有匹配结果，试试更短的关键词。</div>';
   renderFilters();
@@ -80,12 +80,14 @@ function openConcept(id, pushHash=true){
     <h1>${c.title}</h1><p class="drawer-lead">${c.oneLine}</p>
     <div class="depth-callout"><small>它为什么重要</small><p>${c.why}</p></div>
     <div class="formula-box"><small>公式 / 核心结构</small><div>${c.formula}</div></div>
+    ${renderLesson(c.id)}
     <div class="detail-block"><h3>小熊例子</h3><p>${c.example}</p></div>
     <div class="detail-block"><h3>从三个角色看</h3><div class="lens-grid">${Object.entries(c.lenses||{}).map(([who,look])=>`<article><b>${who}</b><p>${look}</p></article>`).join('')}</div></div>
     <div class="detail-block"><h3>它如何影响企业与判断</h3><p>${c.mechanism}</p></div>
     <div class="detail-block judgement-block"><h3>拿到财报后，继续追问</h3><ol>${(c.questions||[]).map(q=>`<li>${q}</li>`).join('')}</ol></div>
     <div class="detail-block"><h3>最容易混淆</h3><p>${c.distinction}</p></div>
     <div class="detail-block"><h3>分析时的陷阱</h3><p>${c.pitfall}</p></div>
+    ${renderDialogues(c.id)}
     <div class="detail-block"><h3>相关概念</h3><div class="related-row">${c.related.map(r=>`<button class="related-btn" data-concept="${r}">${byId(r)?.title||r}</button>`).join('')}</div></div>
     <div class="drawer-actions"><button class="master-btn" data-master="${c.id}">${state.mastered.has(c.id)?'✓ 已掌握':'标记为已掌握'}</button><button class="save-btn" data-bookmark="${c.id}">${state.saved.has(c.id)?'★ 已收藏':'☆ 收藏'}</button></div>`;
   $('#drawer').classList.add('open'); $('#drawer').setAttribute('aria-hidden','false');
@@ -141,7 +143,7 @@ function openSearch(){ $('#searchOverlay').classList.add('open'); $('#searchOver
 function closeSearch(){ $('#searchOverlay').classList.remove('open'); $('#searchOverlay').setAttribute('aria-hidden','true'); }
 function renderGlobalSearch(){
   const q=($('#globalSearch').value||'').trim().toLowerCase();
-  const cs=CONCEPTS.filter(c=>!q||[c.title,c.oneLine,c.example,c.why,c.mechanism,...(c.questions||[])].join(' ').toLowerCase().includes(q)).slice(0,10);
+  const cs=CONCEPTS.filter(c=>!q||[c.title,c.oneLine,c.example,c.why,c.mechanism,...(c.questions||[]),LESSONS[c.id]?.question,LESSONS[c.id]?.use,...DIALOGUE_ARCHIVE.filter(d=>d.concepts.includes(c.id)).map(d=>d.title)].join(' ').toLowerCase().includes(q)).slice(0,10);
   const ks=CASES.filter(c=>q&&[c.title,c.lead].join(' ').toLowerCase().includes(q)).slice(0,5);
   $('#globalResults').innerHTML=[...cs.map(c=>`<button class="global-result" data-concept="${c.id}"><b>${c.title}</b><span>${c.oneLine}</span></button>`),...ks.map(c=>`<button class="global-result" data-case="${c.id}"><b>${c.title}</b><span>${c.type} · ${c.lead}</span></button>`)].join('')||'<div class="empty-state">没有找到结果。</div>';
 }
