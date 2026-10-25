@@ -10,7 +10,7 @@ const DOMAINS = [
 
 const CONCEPTS = [
   {id:'market-cap',title:'市值',domain:'value',level:'基础',oneLine:'股票市场对全部普通股权益的当前报价。',formula:'市值 = 股价 × 总股数',example:'小熊饮料股价20元、总股数1亿股，市值为20亿元。',distinction:'市值只对应普通股，不等于买下整个经营主体的净成本。',pitfall:'低股价不等于低市值，更不等于便宜。',related:['ev','eps','intrinsic-value']},
-  {id:'ev',title:'企业价值 EV',domain:'value',level:'基础',oneLine:'把股东、债权人和现金一起考虑后，对经营主体的估值。',formula:'EV ≈ 市值 + 有息负债 - 现金',example:'小熊饮料市值20亿、债务1亿、现金3亿，EV约18亿。',distinction:'市值是股权报价；EV更接近取得整个业务的净投入。',pitfall:'受限现金、租赁负债、优先股和少数股权可能需要进一步调整。',related:['market-cap','preferred-stock','lbo']},
+  {id:'ev',title:'企业价值 EV',domain:'value',level:'基础',oneLine:'把股东、债权人和现金一起考虑后，对经营主体的估值。',formula:'EV ≈ 市值 + 有息负债 - 现金',example:'小熊饮料市值20亿、债务1亿、现金3亿。收购者先付20亿买股权，接手1亿债务，同时拿到3亿现金；用1亿还债后还剩2亿净现金，所以经营业务净成本约18亿。',distinction:'市值是股权报价；EV更接近取得整个业务的净投入。',pitfall:'受限现金、租赁负债、优先股和少数股权可能需要进一步调整。',related:['market-cap','preferred-stock','lbo']},
   {id:'book-value',title:'账面价值',domain:'value',level:'基础',oneLine:'资产减去负债后，财务报表记录的股东权益。',formula:'股东权益 = 资产 - 负债',example:'小熊公司账面净资产8亿元，但市场可能因品牌和未来盈利给出20亿元市值。',distinction:'它记录历史投入和会计估计，不直接等于未来赚钱能力。',pitfall:'应收、存货、商誉和过时设备未必值账面金额。',related:['intrinsic-value','goodwill','roe']},
   {id:'intrinsic-value',title:'内在价值',domain:'value',level:'进阶',oneLine:'企业未来可分配现金流折回今天的估计价值。',formula:'内在价值 ≈ 未来可分配现金流的现值',example:'教育的花费是账面投入；大学带来的终身新增收入现值，才类似内在价值。',distinction:'内在价值是区间和判断，不是报表里的一行数字。',pitfall:'精确小数常掩盖增长、利润率和折现率假设的不确定性。',related:['book-value','owner-earnings','capital-allocation']},
   {id:'eps',title:'EPS 每股收益',domain:'value',level:'基础',oneLine:'把归属于普通股股东的利润换算到每一股。',formula:'EPS = 归母普通股利润 ÷ 加权平均股数',example:'净利润1.5亿元、1亿股，EPS为1.5元。',distinction:'总利润增长不保证EPS增长，股数增加可能把增量稀释掉。',pitfall:'同时看基本EPS、稀释EPS和潜在期权/可转债。',related:['roe','stock-options','buyback']},
