@@ -82,7 +82,7 @@ const PATHS = [
 ];
 
 const QUICK_PAIRS = [
-  ['market-cap','ev'],['gross-margin','net-margin'],['net-profit','cfo'],['fcf','owner-earnings'],
+  ['market-cap','ev'],['gross-margin','net-margin'],['net-profit','cfo'],['cfo','fcf'],['fcf','owner-earnings'],['look-through','owner-earnings'],
   ['adjusted-profit','owner-earnings'],['goodwill','economic-goodwill'],['gmv','revenue'],
   ['eps','roe'],['options','stock-options'],['book-value','intrinsic-value']
 ];
