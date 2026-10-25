@@ -59,7 +59,7 @@ function renderFilters(){
 
 function renderConcepts(){
   const q = ($('#atlasSearch').value || '').trim().toLowerCase();
-  const rows = CONCEPTS.filter(c => (state.domain==='all'||c.domain===state.domain) && (!q || [c.title,c.oneLine,c.example,c.distinction,c.pitfall].join(' ').toLowerCase().includes(q)));
+  const rows = CONCEPTS.filter(c => (state.domain==='all'||c.domain===state.domain) && (!q || [c.title,c.oneLine,c.example,c.distinction,c.pitfall,c.why,c.mechanism,...Object.values(c.lenses||{}),...(c.questions||[])].join(' ').toLowerCase().includes(q)));
   $('#atlasMeta').textContent = `找到 ${rows.length} 个知识点${state.domain==='all'?'':` · ${domainById(state.domain).name}`}`;
   $('#conceptGrid').innerHTML = rows.length ? rows.map(conceptCard).join('') : '<div class="empty-state">没有匹配结果，试试更短的关键词。</div>';
   renderFilters();
@@ -78,8 +78,12 @@ function openConcept(id, pushHash=true){
   const d = domainById(c.domain);
   $('#drawerContent').innerHTML = `<div class="drawer-label"><span class="eyebrow" style="color:${d.color}">${d.name} · ${c.level}</span></div>
     <h1>${c.title}</h1><p class="drawer-lead">${c.oneLine}</p>
+    <div class="depth-callout"><small>它为什么重要</small><p>${c.why}</p></div>
     <div class="formula-box"><small>公式 / 核心结构</small><div>${c.formula}</div></div>
     <div class="detail-block"><h3>小熊例子</h3><p>${c.example}</p></div>
+    <div class="detail-block"><h3>从三个角色看</h3><div class="lens-grid">${Object.entries(c.lenses||{}).map(([who,look])=>`<article><b>${who}</b><p>${look}</p></article>`).join('')}</div></div>
+    <div class="detail-block"><h3>它如何影响企业与判断</h3><p>${c.mechanism}</p></div>
+    <div class="detail-block judgement-block"><h3>拿到财报后，继续追问</h3><ol>${(c.questions||[]).map(q=>`<li>${q}</li>`).join('')}</ol></div>
     <div class="detail-block"><h3>最容易混淆</h3><p>${c.distinction}</p></div>
     <div class="detail-block"><h3>分析时的陷阱</h3><p>${c.pitfall}</p></div>
     <div class="detail-block"><h3>相关概念</h3><div class="related-row">${c.related.map(r=>`<button class="related-btn" data-concept="${r}">${byId(r)?.title||r}</button>`).join('')}</div></div>
@@ -115,9 +119,9 @@ function renderCompareOptions(){
 
 function compareSide(c){
   const d=domainById(c.domain); return `<article class="compare-side"><span class="eyebrow" style="color:${d.color}">${d.name}</span><h2>${c.title}</h2>
-    <div class="compare-row"><b>本质</b><p>${c.oneLine}</p></div><div class="compare-row"><b>公式 / 结构</b><p>${c.formula}</p></div>
+    <div class="compare-row"><b>本质</b><p>${c.oneLine}</p></div><div class="compare-row"><b>为什么重要</b><p>${c.why}</p></div><div class="compare-row"><b>公式 / 结构</b><p>${c.formula}</p></div>
     <div class="compare-row"><b>例子</b><p>${c.example}</p></div><div class="compare-row"><b>边界</b><p>${c.distinction}</p></div>
-    <div class="compare-row"><b>风险提示</b><p>${c.pitfall}</p></div></article>`;
+    <div class="compare-row"><b>如何用于判断</b><p>${c.mechanism}</p></div><div class="compare-row"><b>第一追问</b><p>${c.questions?.[0]||c.pitfall}</p></div><div class="compare-row"><b>风险提示</b><p>${c.pitfall}</p></div></article>`;
 }
 function renderCompare(){ $('#compareOutput').innerHTML=compareSide(byId($('#compareLeft').value))+compareSide(byId($('#compareRight').value)); }
 
@@ -137,7 +141,7 @@ function openSearch(){ $('#searchOverlay').classList.add('open'); $('#searchOver
 function closeSearch(){ $('#searchOverlay').classList.remove('open'); $('#searchOverlay').setAttribute('aria-hidden','true'); }
 function renderGlobalSearch(){
   const q=($('#globalSearch').value||'').trim().toLowerCase();
-  const cs=CONCEPTS.filter(c=>!q||[c.title,c.oneLine,c.example].join(' ').toLowerCase().includes(q)).slice(0,10);
+  const cs=CONCEPTS.filter(c=>!q||[c.title,c.oneLine,c.example,c.why,c.mechanism,...(c.questions||[])].join(' ').toLowerCase().includes(q)).slice(0,10);
   const ks=CASES.filter(c=>q&&[c.title,c.lead].join(' ').toLowerCase().includes(q)).slice(0,5);
   $('#globalResults').innerHTML=[...cs.map(c=>`<button class="global-result" data-concept="${c.id}"><b>${c.title}</b><span>${c.oneLine}</span></button>`),...ks.map(c=>`<button class="global-result" data-case="${c.id}"><b>${c.title}</b><span>${c.type} · ${c.lead}</span></button>`)].join('')||'<div class="empty-state">没有找到结果。</div>';
 }
