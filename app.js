@@ -5,7 +5,7 @@ const caseById = id => CASES.find(x => x.id === id);
 const domainById = id => DOMAINS.find(x => x.id === id);
 
 const state = {
-  route: 'home', domain: 'all', caseType: 'all',
+  route: 'home', domain: 'all', caseType: 'all', industry: 'all', company: 'all',
   saved: new Set(JSON.parse(localStorage.getItem('bearSaved') || '[]')),
   mastered: new Set(JSON.parse(localStorage.getItem('bearMastered') || '[]')),
   recent: JSON.parse(localStorage.getItem('bearRecent') || '[]')
@@ -55,11 +55,20 @@ function renderFilters(){
   $('#domainFilters').innerHTML = [{id:'all',name:'全部'},...DOMAINS].map(d=>`<button class="filter-chip ${state.domain===d.id?'active':''}" data-domain-filter="${d.id}">${d.name}</button>`).join('');
   const types = ['all',...new Set(CASES.map(c=>c.type))];
   $('#caseFilters').innerHTML = types.map(t=>`<button class="filter-chip ${state.caseType===t?'active':''}" data-case-filter="${t}">${t==='all'?'全部案例':t}</button>`).join('');
+  const industries = ['all',...new Set(Object.values(CASE_TAXONOMY).map(x=>x.industry))];
+  $('#industryFilters').innerHTML = industries.map(i=>`<button class="filter-chip ${state.industry===i?'active':''}" data-industry-filter="${i}">${i==='all'?'全部行业':i}</button>`).join('');
+  const companies = ['all',...new Set(CASES.filter(c=>state.industry==='all'||CASE_TAXONOMY[c.id]?.industry===state.industry).map(c=>CASE_TAXONOMY[c.id]?.company).filter(Boolean))];
+  $('#companyFilter').innerHTML = companies.map(c=>`<option value="${c}">${c==='all'?'全部公司':c}</option>`).join('');
+  $('#companyFilter').value = companies.includes(state.company)?state.company:'all';
+}
+
+function renderIndustryGuide(){
+  $('#industryGuide').innerHTML = INDUSTRY_METHODS.map(item=>`<button class="industry-card" data-industry-filter="${item.industry}"><small>${item.industry}</small><b>${item.companies}</b><span>${item.method}</span><em>查看这一类案例 →</em></button>`).join('');
 }
 
 function renderConcepts(){
   const q = ($('#atlasSearch').value || '').trim().toLowerCase();
-  const rows = CONCEPTS.filter(c => (state.domain==='all'||c.domain===state.domain) && (!q || [c.title,c.oneLine,c.example,c.distinction,c.pitfall,c.why,c.mechanism,...Object.values(c.lenses||{}),...(c.questions||[]),LESSONS[c.id]?.question,LESSONS[c.id]?.use,...DIALOGUE_ARCHIVE.filter(d=>d.concepts.includes(c.id)).map(d=>d.title)].join(' ').toLowerCase().includes(q)));
+  const rows = CONCEPTS.filter(c => (state.domain==='all'||c.domain===state.domain) && (!q || [c.title,c.oneLine,c.example,c.distinction,c.pitfall,c.why,c.mechanism,TODAY_NOTES[c.id],...Object.values(c.lenses||{}),...(c.questions||[]),LESSONS[c.id]?.question,LESSONS[c.id]?.use,...DIALOGUE_ARCHIVE.filter(d=>d.concepts.includes(c.id)).map(d=>d.title)].join(' ').toLowerCase().includes(q)));
   $('#atlasMeta').textContent = `找到 ${rows.length} 个知识点${state.domain==='all'?'':` · ${domainById(state.domain).name}`}`;
   $('#conceptGrid').innerHTML = rows.length ? rows.map(conceptCard).join('') : '<div class="empty-state">没有匹配结果，试试更短的关键词。</div>';
   renderFilters();
@@ -67,8 +76,9 @@ function renderConcepts(){
 
 function renderCases(){
   const q = ($('#caseSearch').value || '').trim().toLowerCase();
-  const rows = CASES.filter(c => (state.caseType==='all'||c.type===state.caseType) && (!q || [c.title,c.lead,c.conclusion,...c.numbers].join(' ').toLowerCase().includes(q)));
-  $('#caseGrid').innerHTML = rows.length ? rows.map(c=>`<article class="case-card" data-case="${c.id}"><small>${c.type}</small><h3>${c.title}</h3><p>${c.lead}</p><div class="number-row">${c.numbers.map(n=>`<span>${n}</span>`).join('')}</div></article>`).join('') : '<div class="empty-state">没有匹配案例。</div>';
+  const rows = CASES.filter(c => (state.caseType==='all'||c.type===state.caseType) && (state.industry==='all'||CASE_TAXONOMY[c.id]?.industry===state.industry) && (state.company==='all'||CASE_TAXONOMY[c.id]?.company===state.company) && (!q || [c.title,c.lead,c.conclusion,...c.numbers,CASE_TAXONOMY[c.id]?.industry,CASE_TAXONOMY[c.id]?.company,CASE_NOTES[c.id]].join(' ').toLowerCase().includes(q)));
+  $('#caseMeta').textContent = `找到 ${rows.length} 个案例${state.industry==='all'?'':` · ${state.industry}`}${state.company==='all'?'':` · ${state.company}`}`;
+  $('#caseGrid').innerHTML = rows.length ? rows.map(c=>`<article class="case-card" data-case="${c.id}"><small>${CASE_TAXONOMY[c.id]?.industry||c.type} · ${CASE_TAXONOMY[c.id]?.company||'综合案例'}</small><h3>${c.title}</h3><p>${c.lead}</p><div class="number-row">${c.numbers.map(n=>`<span>${n}</span>`).join('')}</div></article>`).join('') : '<div class="empty-state">没有匹配案例。试试切换行业或公司。</div>';
   renderFilters();
 }
 
@@ -81,7 +91,8 @@ function openConcept(id, pushHash=true){
     <div class="depth-callout"><small>它为什么重要</small><p>${c.why}</p></div>
     <div class="formula-box"><small>公式 / 核心结构</small><div>${c.formula}</div></div>
     ${renderLesson(c.id)}
-    <div class="detail-block"><h3>小熊例子</h3><p>${c.example}</p></div>
+    ${TODAY_NOTES[c.id]?`<section class="dialogue-section"><span class="lesson-kicker">本次对话 · 完整解释</span><div class="markdown-body">${markdownToHtml(TODAY_NOTES[c.id])}</div></section>`:''}
+    <div class="detail-block"><h3>${TODAY_NOTES[c.id]?'名创真实例子':'小熊例子'}</h3><p>${c.example}</p></div>
     <div class="detail-block"><h3>从三个角色看</h3><div class="lens-grid">${Object.entries(c.lenses||{}).map(([who,look])=>`<article><b>${who}</b><p>${look}</p></article>`).join('')}</div></div>
     <div class="detail-block"><h3>它如何影响企业与判断</h3><p>${c.mechanism}</p></div>
     <div class="detail-block judgement-block"><h3>拿到财报后，继续追问</h3><ol>${(c.questions||[]).map(q=>`<li>${q}</li>`).join('')}</ol></div>
@@ -97,8 +108,9 @@ function openConcept(id, pushHash=true){
 
 function openCase(id, pushHash=true){
   const c = caseById(id); if(!c) return;
-  $('#drawerContent').innerHTML = `<div class="drawer-label"><span class="eyebrow">${c.type}</span></div><h1>${c.title}</h1><p class="drawer-lead">${c.lead}</p>
+  $('#drawerContent').innerHTML = `<div class="drawer-label"><span class="eyebrow">${CASE_TAXONOMY[c.id]?.industry||c.type} · ${CASE_TAXONOMY[c.id]?.company||'综合案例'}</span></div><h1>${c.title}</h1><p class="drawer-lead">${c.lead}</p>
     <div class="detail-block"><h3>关键数字</h3><div class="number-row">${c.numbers.map(n=>`<span>${n}</span>`).join('')}</div></div>
+    ${CASE_NOTES[c.id]?`<section class="dialogue-section"><span class="lesson-kicker">完整案例 · 分层拆解</span><div class="markdown-body">${markdownToHtml(CASE_NOTES[c.id])}</div></section>`:''}
     <div class="detail-block"><h3>核心结论</h3><p class="case-conclusion">${c.conclusion}</p></div>
     <div class="detail-block"><h3>继续追问</h3><ul class="case-questions">${c.questions.map(q=>`<li>${q}</li>`).join('')}</ul></div>
     <div class="detail-block"><h3>涉及知识点</h3><div class="related-row">${c.concepts.map(r=>`<button class="related-btn" data-concept="${r}">${byId(r).title}</button>`).join('')}</div></div>`;
@@ -143,8 +155,8 @@ function openSearch(){ $('#searchOverlay').classList.add('open'); $('#searchOver
 function closeSearch(){ $('#searchOverlay').classList.remove('open'); $('#searchOverlay').setAttribute('aria-hidden','true'); }
 function renderGlobalSearch(){
   const q=($('#globalSearch').value||'').trim().toLowerCase();
-  const cs=CONCEPTS.filter(c=>!q||[c.title,c.oneLine,c.example,c.why,c.mechanism,...(c.questions||[]),LESSONS[c.id]?.question,LESSONS[c.id]?.use,...DIALOGUE_ARCHIVE.filter(d=>d.concepts.includes(c.id)).map(d=>d.title)].join(' ').toLowerCase().includes(q)).slice(0,10);
-  const ks=CASES.filter(c=>q&&[c.title,c.lead].join(' ').toLowerCase().includes(q)).slice(0,5);
+  const cs=CONCEPTS.filter(c=>!q||[c.title,c.oneLine,c.example,c.why,c.mechanism,TODAY_NOTES[c.id],...(c.questions||[]),LESSONS[c.id]?.question,LESSONS[c.id]?.use,...DIALOGUE_ARCHIVE.filter(d=>d.concepts.includes(c.id)).map(d=>d.title)].join(' ').toLowerCase().includes(q)).slice(0,10);
+  const ks=CASES.filter(c=>q&&[c.title,c.lead,CASE_TAXONOMY[c.id]?.company,CASE_TAXONOMY[c.id]?.industry,CASE_NOTES[c.id]].join(' ').toLowerCase().includes(q)).slice(0,5);
   $('#globalResults').innerHTML=[...cs.map(c=>`<button class="global-result" data-concept="${c.id}"><b>${c.title}</b><span>${c.oneLine}</span></button>`),...ks.map(c=>`<button class="global-result" data-case="${c.id}"><b>${c.title}</b><span>${c.type} · ${c.lead}</span></button>`)].join('')||'<div class="empty-state">没有找到结果。</div>';
 }
 
@@ -158,11 +170,13 @@ document.addEventListener('click', async e=>{
   const domain=e.target.closest('[data-domain-jump]'); if(domain){state.domain=domain.dataset.domainJump;route('atlas');renderConcepts();return;}
   const df=e.target.closest('[data-domain-filter]'); if(df){state.domain=df.dataset.domainFilter;renderConcepts();return;}
   const cf=e.target.closest('[data-case-filter]'); if(cf){state.caseType=cf.dataset.caseFilter;renderCases();return;}
+  const inf=e.target.closest('[data-industry-filter]'); if(inf){state.industry=inf.dataset.industryFilter;state.company='all';route('cases');renderCases();return;}
   const pair=e.target.closest('[data-pair]'); if(pair){const[a,b]=pair.dataset.pair.split(',');$('#compareLeft').value=a;$('#compareRight').value=b;renderCompare();return;}
   const path=e.target.closest('[data-path]'); if(path){const p=PATHS.find(x=>x.id===path.dataset.path);openConcept(p.steps[0]);toast(`已从“${p.title}”第一张开始`);return;}
 });
 
 $('#atlasSearch').addEventListener('input',renderConcepts); $('#caseSearch').addEventListener('input',renderCases);
+$('#companyFilter').addEventListener('change',e=>{state.company=e.target.value;renderCases();});
 $('#compareLeft').addEventListener('change',renderCompare); $('#compareRight').addEventListener('change',renderCompare);
 $('#swapCompare').addEventListener('click',()=>{const a=$('#compareLeft').value;$('#compareLeft').value=$('#compareRight').value;$('#compareRight').value=a;renderCompare();});
 $('#randomConcept').addEventListener('click',randomUnmastered); $('#reviewRandom').addEventListener('click',randomUnmastered);
@@ -178,4 +192,4 @@ function bootFromHash(){
   else if(['home','atlas','cases','compare','review'].includes(h)) route(h,false);
 }
 
-renderHome(); renderFilters(); renderConcepts(); renderCases(); renderCompareOptions(); renderReview(); updateCounts(); bootFromHash();
+renderHome(); renderIndustryGuide(); renderFilters(); renderConcepts(); renderCases(); renderCompareOptions(); renderReview(); updateCounts(); bootFromHash();
