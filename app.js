@@ -78,7 +78,7 @@ function renderCases(){
   const q = ($('#caseSearch').value || '').trim().toLowerCase();
   const rows = CASES.filter(c => (state.caseType==='all'||c.type===state.caseType) && (state.industry==='all'||CASE_TAXONOMY[c.id]?.industry===state.industry) && (state.company==='all'||CASE_TAXONOMY[c.id]?.company===state.company) && (!q || [c.title,c.lead,c.conclusion,...c.numbers,CASE_TAXONOMY[c.id]?.industry,CASE_TAXONOMY[c.id]?.company,CASE_NOTES[c.id]].join(' ').toLowerCase().includes(q)));
   $('#caseMeta').textContent = `找到 ${rows.length} 个案例${state.industry==='all'?'':` · ${state.industry}`}${state.company==='all'?'':` · ${state.company}`}`;
-  $('#caseGrid').innerHTML = rows.length ? rows.map(c=>`<article class="case-card" data-case="${c.id}"><small>${CASE_TAXONOMY[c.id]?.industry||c.type} · ${CASE_TAXONOMY[c.id]?.company||'综合案例'}</small><h3>${c.title}</h3><p>${c.lead}</p><div class="number-row">${c.numbers.map(n=>`<span>${n}</span>`).join('')}</div></article>`).join('') : '<div class="empty-state">没有匹配案例。试试切换行业或公司。</div>';
+  $('#caseGrid').innerHTML = rows.length ? rows.map(c=>`<article class="case-card" data-case="${c.id}"><small>${CASE_TAXONOMY[c.id]?.industry||c.type} · ${CASE_TAXONOMY[c.id]?.company||'综合案例'}</small><h3>${c.title}</h3><p>${c.lead}</p>${MINISO_LEARNING[c.id]?`<div class="case-learning-preview"><b>通过这篇学会</b><span>${MINISO_LEARNING[c.id].join(' · ')}</span></div>`:''}<div class="number-row">${c.numbers.map(n=>`<span>${n}</span>`).join('')}</div></article>`).join('') : '<div class="empty-state">没有匹配案例。试试切换行业或公司。</div>';
   renderFilters();
 }
 
@@ -109,6 +109,7 @@ function openConcept(id, pushHash=true){
 function openCase(id, pushHash=true){
   const c = caseById(id); if(!c) return;
   $('#drawerContent').innerHTML = `<div class="drawer-label"><span class="eyebrow">${CASE_TAXONOMY[c.id]?.industry||c.type} · ${CASE_TAXONOMY[c.id]?.company||'综合案例'}</span></div><h1>${c.title}</h1><p class="drawer-lead">${c.lead}</p>
+    ${MINISO_LEARNING[c.id]?`<div class="detail-block case-learning"><h3>通过这个案例学什么</h3><ul>${MINISO_LEARNING[c.id].map(item=>`<li>${item}</li>`).join('')}</ul></div>`:''}
     <div class="detail-block"><h3>关键数字</h3><div class="number-row">${c.numbers.map(n=>`<span>${n}</span>`).join('')}</div></div>
     ${CASE_NOTES[c.id]?`<section class="dialogue-section"><span class="lesson-kicker">完整案例 · 分层拆解</span><div class="markdown-body">${markdownToHtml(CASE_NOTES[c.id])}</div></section>`:''}
     <div class="detail-block"><h3>核心结论</h3><p class="case-conclusion">${c.conclusion}</p></div>
