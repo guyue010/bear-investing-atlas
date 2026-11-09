@@ -5,7 +5,7 @@
 <body><main><h1>价值投资案例知识图谱</h1><form id="unlock"><label for="password">访问口令</label><input id="password" type="password" autocomplete="off" required autofocus><button type="submit">解锁</button></form><p id="status" role="status"></p></main>
 <script>
 const files=["part-01.txt","part-02.txt","part-03.txt","part-04.txt","part-05.txt","part-06.txt","part-07.txt","part-08.txt","part-09.txt","part-10.txt","part-11.txt","part-12.txt","part-13.txt","part-14.txt"];
-const salt="D4yS2ziCnOGO3h3EeqzsfQ==",iv="hPDbXUWZhefvrgDN";
+const salt="Yn0Mf2w8rxHlZm0T7z9AzA==",iv="dzjoO3LbvrIraI9F";
 const bytes=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 document.getElementById("unlock").addEventListener("submit",async event=>{
  event.preventDefault();const button=event.target.querySelector("button"),status=document.getElementById("status");button.disabled=true;status.textContent="正在解锁…";
