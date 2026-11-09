@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>价值投资案例知识图谱 · 私密版</title>
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f2f5f4;color:#172b2a;font:16px/1.6 system-ui,sans-serif}main{width:min(420px,calc(100% - 40px));padding:30px;background:white;border:1px solid #d9e2df;border-radius:8px;box-shadow:0 12px 38px #14282515}h1{font-size:24px;margin:0 0 16px}label{display:block;margin-bottom:8px}input{box-sizing:border-box;width:100%;padding:12px;font:inherit;border:1px solid #9dadab;border-radius:6px}button{margin-top:16px;width:100%;padding:12px;background:#126363;color:white;border:0;border-radius:6px;font:inherit;cursor:pointer}button:disabled{opacity:.6;cursor:wait}p{min-height:1.5em;color:#9c3232}</style></head>
+<body><main><h1>价值投资案例知识图谱</h1><form id="unlock"><label for="password">访问口令</label><input id="password" type="password" autocomplete="off" required autofocus><button type="submit">解锁</button></form><p id="status" role="status"></p></main>
+<script>
+const files=["part-01.txt","part-02.txt","part-03.txt","part-04.txt","part-05.txt","part-06.txt","part-07.txt","part-08.txt","part-09.txt","part-10.txt","part-11.txt","part-12.txt","part-13.txt","part-14.txt"];
+const salt="D4yS2ziCnOGO3h3EeqzsfQ==",iv="hPDbXUWZhefvrgDN";
+const bytes=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+document.getElementById("unlock").addEventListener("submit",async event=>{
+ event.preventDefault();const button=event.target.querySelector("button"),status=document.getElementById("status");button.disabled=true;status.textContent="正在解锁…";
+ try{
+  const pass=document.getElementById("password").value;
+  const material=await crypto.subtle.importKey("raw",new TextEncoder().encode(pass),"PBKDF2",false,["deriveKey"]);
+  const key=await crypto.subtle.deriveKey({name:"PBKDF2",salt:bytes(salt),iterations:600000,hash:"SHA-256"},material,{name:"AES-GCM",length:256},false,["decrypt"]);
+  const chunks=await Promise.all(files.map(async file=>{const response=await fetch(file,{cache:"no-store"});if(!response.ok)throw Error("数据加载失败");return response.text()}));
+  const plain=await crypto.subtle.decrypt({name:"AES-GCM",iv:bytes(iv)},key,bytes(chunks.join("")));
+  const stream=new Blob([plain]).stream().pipeThrough(new DecompressionStream("gzip"));
+  const page=await new Response(stream).text();document.open();document.write(page);document.close();
+ }catch(error){status.textContent=error.message==="数据加载失败"?error.message:"口令错误或浏览器不支持解锁";button.disabled=false}
+});
+</script></body></html>
